@@ -10,12 +10,15 @@
 </style>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useRef } = React;
+<script>
+const {
+  useState,
+  useEffect,
+  useRef
+} = React;
 
 /* ------------------------------------------------------------------ */
 /*  Симуляция: «Продвижение процесса трансформации»                    */
@@ -149,115 +152,241 @@ const CSS = `
 
 /* --------------------------- data --------------------------- */
 
-const INITIAL = { trust: 70, speed: 50, ethics: 80, vision: 65, morale: 70, risk: 65, learn: 14 };
-
-const GAUGES = [
-  { key: "trust",  label: "Доверие и сотрудничество", sub: "ТОПЛИВО",    good: "high" },
-  { key: "speed",  label: "Темп изменений",            sub: "СПИДОМЕТР", good: "band" },
-  { key: "ethics", label: "Этический компас",          sub: "КОМПАС",    good: "high" },
-  { key: "vision", label: "Видение и результаты",       sub: "GPS",       good: "high" },
-  { key: "morale", label: "Моральный дух персонала",    sub: "СИГНАЛ",    good: "high", lamp: true },
-  { key: "risk",   label: "Риски и исключения",         sub: "СИГНАЛ",    good: "high", lamp: true },
-];
-
-const STAGES = [
-  {
-    icon: "⛽", title: "Заканчивается топливо", tag: "Доверие и сотрудничество",
-    body: "Граждане жалуются, что их не привлекают к обсуждению проекта. Уровень доверия и сотрудничества падает.",
-    choices: [
-      { label: "Снизить скорость и восстановить доверие",
-        note: "Вы открываете консультации с гражданами. Темп замедляется, но доверие возвращается.",
-        fx: { trust: 18, speed: -15, vision: 5, morale: 4, learn: 6 } },
-      { label: "Продолжить движение, чтобы достичь целей",
-        note: "Сроки соблюдены, но дистанция между вами и гражданами растёт.",
-        fx: { trust: -16, speed: 8, risk: -10, morale: -3, learn: 2 } },
-    ],
-  },
-  {
-    icon: "🚗", title: "Превышение скорости", tag: "Темп изменений",
-    body: "Сотрудники перегружены: несколько новых систем внедряются одновременно.",
-    choices: [
-      { label: "Приостановить часть внедрений",
-        note: "Нагрузка снижается, команда выдыхает и берёт паузу.",
-        fx: { speed: -22, morale: 16, risk: 10, vision: -4, learn: 8 } },
-      { label: "Продолжить, чтобы уложиться в сроки",
-        note: "График под контролем, но усталость накапливается.",
-        fx: { speed: 10, morale: -20, risk: -10, trust: -5, learn: 3 } },
-    ],
-  },
-  {
-    icon: "🧭", title: "Этическая дилемма", tag: "Этический компас",
-    body: "Новый поставщик обещает более быстрое внедрение, но со слабой защитой конфиденциальности данных.",
-    choices: [
-      { label: "Отказаться от поставщика",
-        note: "Вы сохраняете принципы, хотя теряете в скорости.",
-        fx: { ethics: 18, speed: -10, vision: 5, trust: 6, learn: 7 } },
-      { label: "Принять предложение",
-        note: "Скорость выросла, но компас заметно отклонился от курса.",
-        fx: { ethics: -30, speed: 15, risk: -15, trust: -12, learn: 2 } },
-    ],
-  },
-  {
-    icon: "🌫️", title: "Туманная дорога", tag: "Видение и результаты",
-    body: "Приоритеты политики меняются в середине пути. Видение и результаты теряют чёткость.",
-    choices: [
-      { label: "Пересмотреть видение под новые приоритеты",
-        note: "Маршрут перестроен — цель снова видна впереди.",
-        fx: { vision: 20, speed: -10, morale: -4, learn: 12 } },
-      { label: "Придерживаться прежнего плана",
-        note: "Вы держите курс, но он всё сильнее расходится с реальностью.",
-        fx: { vision: -20, speed: 5, risk: -10, learn: 3 } },
-    ],
-  },
-  {
-    icon: "🔧", title: "Загорелся предупреждающий сигнал", tag: "Моральный дух и стресс персонала",
-    body: "Персонал на передовой сопротивляется системе, ссылаясь на запутанные рабочие процессы.",
-    choices: [
-      { label: "Переобучить персонал",
-        note: "Команда осваивает систему, напряжение спадает.",
-        fx: { morale: 15, speed: -10, vision: 5, learn: 10 } },
-      { label: "Перепроектировать рабочие процессы",
-        note: "Процессы упрощаются — глубже, но дольше.",
-        fx: { morale: 20, risk: 10, speed: -15, learn: 9 } },
-      { label: "Проигнорировать предупреждение",
-        note: "Вы едете дальше, но сигнальная лампа продолжает гореть.",
-        fx: { morale: -25, trust: -10, risk: -15, speed: 10, learn: 1 } },
-    ],
-  },
-  {
-    icon: "🪨", title: "Препятствие на дороге", tag: "Риски и исключения",
-    body: "Пользователи из сельской местности не могут получить доступ к услугам из-за плохого подключения.",
-    choices: [
-      { label: "Отложить внедрение до решения проблемы",
-        note: "Никто не остаётся за бортом, но график сдвигается.",
-        fx: { risk: 20, trust: 10, speed: -15, vision: 5, learn: 9 } },
-      { label: "Временно исключить эту группу",
-        note: "Вы едете дальше, оставив часть людей на обочине.",
-        fx: { risk: -20, trust: -15, ethics: -15, speed: 10, learn: 2 } },
-    ],
-  },
-  {
-    icon: "🏁", title: "Контрольная точка", tag: "Обучение и полученный опыт",
-    body: "Вы достигли первой вехи. Как вы извлекаете уроки и используете их для следующего этапа?",
-    choices: [
-      { label: "Провести разбор и задокументировать уроки",
-        note: "Опыт зафиксирован — следующий участок пути начнётся увереннее.",
-        fx: { learn: 25, morale: 10, vision: 10 } },
-      { label: "Двигаться дальше без остановки",
-        note: "Время сэкономлено, но уроки остались позади на дороге.",
-        fx: { learn: 1, speed: 10, risk: -10 } },
-    ],
-  },
-];
+const INITIAL = {
+  trust: 70,
+  speed: 50,
+  ethics: 80,
+  vision: 65,
+  morale: 70,
+  risk: 65,
+  learn: 14
+};
+const GAUGES = [{
+  key: "trust",
+  label: "Доверие и сотрудничество",
+  sub: "ТОПЛИВО",
+  good: "high"
+}, {
+  key: "speed",
+  label: "Темп изменений",
+  sub: "СПИДОМЕТР",
+  good: "band"
+}, {
+  key: "ethics",
+  label: "Этический компас",
+  sub: "КОМПАС",
+  good: "high"
+}, {
+  key: "vision",
+  label: "Видение и результаты",
+  sub: "GPS",
+  good: "high"
+}, {
+  key: "morale",
+  label: "Моральный дух персонала",
+  sub: "СИГНАЛ",
+  good: "high",
+  lamp: true
+}, {
+  key: "risk",
+  label: "Риски и исключения",
+  sub: "СИГНАЛ",
+  good: "high",
+  lamp: true
+}];
+const STAGES = [{
+  icon: "⛽",
+  title: "Заканчивается топливо",
+  tag: "Доверие и сотрудничество",
+  body: "Граждане жалуются, что их не привлекают к обсуждению проекта. Уровень доверия и сотрудничества падает.",
+  choices: [{
+    label: "Снизить скорость и восстановить доверие",
+    note: "Вы открываете консультации с гражданами. Темп замедляется, но доверие возвращается.",
+    fx: {
+      trust: 18,
+      speed: -15,
+      vision: 5,
+      morale: 4,
+      learn: 6
+    }
+  }, {
+    label: "Продолжить движение, чтобы достичь целей",
+    note: "Сроки соблюдены, но дистанция между вами и гражданами растёт.",
+    fx: {
+      trust: -16,
+      speed: 8,
+      risk: -10,
+      morale: -3,
+      learn: 2
+    }
+  }]
+}, {
+  icon: "🚗",
+  title: "Превышение скорости",
+  tag: "Темп изменений",
+  body: "Сотрудники перегружены: несколько новых систем внедряются одновременно.",
+  choices: [{
+    label: "Приостановить часть внедрений",
+    note: "Нагрузка снижается, команда выдыхает и берёт паузу.",
+    fx: {
+      speed: -22,
+      morale: 16,
+      risk: 10,
+      vision: -4,
+      learn: 8
+    }
+  }, {
+    label: "Продолжить, чтобы уложиться в сроки",
+    note: "График под контролем, но усталость накапливается.",
+    fx: {
+      speed: 10,
+      morale: -20,
+      risk: -10,
+      trust: -5,
+      learn: 3
+    }
+  }]
+}, {
+  icon: "🧭",
+  title: "Этическая дилемма",
+  tag: "Этический компас",
+  body: "Новый поставщик обещает более быстрое внедрение, но со слабой защитой конфиденциальности данных.",
+  choices: [{
+    label: "Отказаться от поставщика",
+    note: "Вы сохраняете принципы, хотя теряете в скорости.",
+    fx: {
+      ethics: 18,
+      speed: -10,
+      vision: 5,
+      trust: 6,
+      learn: 7
+    }
+  }, {
+    label: "Принять предложение",
+    note: "Скорость выросла, но компас заметно отклонился от курса.",
+    fx: {
+      ethics: -30,
+      speed: 15,
+      risk: -15,
+      trust: -12,
+      learn: 2
+    }
+  }]
+}, {
+  icon: "🌫️",
+  title: "Туманная дорога",
+  tag: "Видение и результаты",
+  body: "Приоритеты политики меняются в середине пути. Видение и результаты теряют чёткость.",
+  choices: [{
+    label: "Пересмотреть видение под новые приоритеты",
+    note: "Маршрут перестроен — цель снова видна впереди.",
+    fx: {
+      vision: 20,
+      speed: -10,
+      morale: -4,
+      learn: 12
+    }
+  }, {
+    label: "Придерживаться прежнего плана",
+    note: "Вы держите курс, но он всё сильнее расходится с реальностью.",
+    fx: {
+      vision: -20,
+      speed: 5,
+      risk: -10,
+      learn: 3
+    }
+  }]
+}, {
+  icon: "🔧",
+  title: "Загорелся предупреждающий сигнал",
+  tag: "Моральный дух и стресс персонала",
+  body: "Персонал на передовой сопротивляется системе, ссылаясь на запутанные рабочие процессы.",
+  choices: [{
+    label: "Переобучить персонал",
+    note: "Команда осваивает систему, напряжение спадает.",
+    fx: {
+      morale: 15,
+      speed: -10,
+      vision: 5,
+      learn: 10
+    }
+  }, {
+    label: "Перепроектировать рабочие процессы",
+    note: "Процессы упрощаются — глубже, но дольше.",
+    fx: {
+      morale: 20,
+      risk: 10,
+      speed: -15,
+      learn: 9
+    }
+  }, {
+    label: "Проигнорировать предупреждение",
+    note: "Вы едете дальше, но сигнальная лампа продолжает гореть.",
+    fx: {
+      morale: -25,
+      trust: -10,
+      risk: -15,
+      speed: 10,
+      learn: 1
+    }
+  }]
+}, {
+  icon: "🪨",
+  title: "Препятствие на дороге",
+  tag: "Риски и исключения",
+  body: "Пользователи из сельской местности не могут получить доступ к услугам из-за плохого подключения.",
+  choices: [{
+    label: "Отложить внедрение до решения проблемы",
+    note: "Никто не остаётся за бортом, но график сдвигается.",
+    fx: {
+      risk: 20,
+      trust: 10,
+      speed: -15,
+      vision: 5,
+      learn: 9
+    }
+  }, {
+    label: "Временно исключить эту группу",
+    note: "Вы едете дальше, оставив часть людей на обочине.",
+    fx: {
+      risk: -20,
+      trust: -15,
+      ethics: -15,
+      speed: 10,
+      learn: 2
+    }
+  }]
+}, {
+  icon: "🏁",
+  title: "Контрольная точка",
+  tag: "Обучение и полученный опыт",
+  body: "Вы достигли первой вехи. Как вы извлекаете уроки и используете их для следующего этапа?",
+  choices: [{
+    label: "Провести разбор и задокументировать уроки",
+    note: "Опыт зафиксирован — следующий участок пути начнётся увереннее.",
+    fx: {
+      learn: 25,
+      morale: 10,
+      vision: 10
+    }
+  }, {
+    label: "Двигаться дальше без остановки",
+    note: "Время сэкономлено, но уроки остались позади на дороге.",
+    fx: {
+      learn: 1,
+      speed: 10,
+      risk: -10
+    }
+  }]
+}];
 
 /* --------------------------- helpers --------------------------- */
 
 const clamp = (v, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, v));
-
 function colorFor(key, v) {
   if (key === "speed") {
     if (v >= 35 && v <= 70) return "#3fb950";
-    if ((v >= 25 && v < 35) || (v > 70 && v <= 82)) return "#e3a008";
+    if (v >= 25 && v < 35 || v > 70 && v <= 82) return "#e3a008";
     return "#f85149";
   }
   if (v >= 60) return "#3fb950";
@@ -268,17 +397,18 @@ function isAlarm(key, v) {
   if (key === "speed") return v < 25 || v > 82;
   return v < 30;
 }
-const valToDeg = (v) => 180 * (1 - clamp(v) / 100);
+const valToDeg = v => 180 * (1 - clamp(v) / 100);
 function polar(cx, cy, r, deg) {
-  const a = (deg * Math.PI) / 180;
+  const a = deg * Math.PI / 180;
   return [cx + r * Math.cos(a), cy - r * Math.sin(a)];
 }
 function arcPath(cx, cy, r, vA, vB) {
-  const d1 = valToDeg(vA), d2 = valToDeg(vB);
+  const d1 = valToDeg(vA),
+    d2 = valToDeg(vB);
   const steps = 40;
   let p = "";
   for (let i = 0; i <= steps; i++) {
-    const d = d1 + ((d2 - d1) * i) / steps;
+    const d = d1 + (d2 - d1) * i / steps;
     const [x, y] = polar(cx, cy, r, d);
     p += (i ? "L" : "M") + x.toFixed(2) + " " + y.toFixed(2) + " ";
   }
@@ -290,18 +420,24 @@ function useTween(target, dur = 750) {
   const [v, setV] = useState(target);
   const ref = useRef(target);
   useEffect(() => {
-    const reduced = typeof window !== "undefined" &&
-      window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) { ref.current = target; setV(target); return; }
-    const from = { ...ref.current };
+    const reduced = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      ref.current = target;
+      setV(target);
+      return;
+    }
+    const from = {
+      ...ref.current
+    };
     const start = performance.now();
     let raf;
-    const tick = (t) => {
+    const tick = t => {
       const k = Math.min(1, (t - start) / dur);
       const e = 1 - Math.pow(1 - k, 3);
       const nv = {};
       for (const key in target) nv[key] = from[key] + (target[key] - from[key]) * e;
-      ref.current = nv; setV(nv);
+      ref.current = nv;
+      setV(nv);
       if (k < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -312,103 +448,156 @@ function useTween(target, dur = 750) {
 
 /* --------------------------- components --------------------------- */
 
-function Gauge({ meta, value }) {
-  const cx = 60, cy = 58, r = 46;
+function Gauge({
+  meta,
+  value
+}) {
+  const cx = 60,
+    cy = 58,
+    r = 46;
   const col = colorFor(meta.key, value);
   const alarm = meta.lamp && isAlarm(meta.key, value);
   const [nx, ny] = polar(cx, cy, r - 6, valToDeg(value));
-  return (
-    <div className={"gauge" + (alarm ? " alarm" : "")}>
-      {meta.lamp && <span className={"lamp" + (alarm ? " on" : "")} />}
-      <svg viewBox="0 0 120 70" width="100%" style={{ display: "block" }}>
-        {/* track */}
-        <path d={arcPath(cx, cy, r, 0, 100)} fill="none" stroke="#202833" strokeWidth="9" strokeLinecap="round" />
-        {/* optimal band for the speedometer */}
-        {meta.key === "speed" && (
-          <path d={arcPath(cx, cy, r, 35, 70)} fill="none" stroke="rgba(63,185,80,.28)" strokeWidth="9" strokeLinecap="round" />
-        )}
-        {/* value */}
-        <path d={arcPath(cx, cy, r, 0, value)} fill="none" stroke={col} strokeWidth="9" strokeLinecap="round" />
-        {/* needle */}
-        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#e8eef5" strokeWidth="2.4" strokeLinecap="round" />
-        <circle cx={cx} cy={cy} r="4.5" fill="#e8eef5" />
-        <circle cx={cx} cy={cy} r="2" fill="#0d1117" />
-      </svg>
-      <div className="gval" style={{ color: col }}>{Math.round(value)}</div>
-      <div className="glab">{meta.label}</div>
-      <div className="gsub">{meta.sub}</div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "gauge" + (alarm ? " alarm" : "")
+  }, meta.lamp && /*#__PURE__*/React.createElement("span", {
+    className: "lamp" + (alarm ? " on" : "")
+  }), /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 120 70",
+    width: "100%",
+    style: {
+      display: "block"
+    }
+  }, /*#__PURE__*/React.createElement("path", {
+    d: arcPath(cx, cy, r, 0, 100),
+    fill: "none",
+    stroke: "#202833",
+    strokeWidth: "9",
+    strokeLinecap: "round"
+  }), meta.key === "speed" && /*#__PURE__*/React.createElement("path", {
+    d: arcPath(cx, cy, r, 35, 70),
+    fill: "none",
+    stroke: "rgba(63,185,80,.28)",
+    strokeWidth: "9",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: arcPath(cx, cy, r, 0, value),
+    fill: "none",
+    stroke: col,
+    strokeWidth: "9",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: cx,
+    y1: cy,
+    x2: nx,
+    y2: ny,
+    stroke: "#e8eef5",
+    strokeWidth: "2.4",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: cx,
+    cy: cy,
+    r: "4.5",
+    fill: "#e8eef5"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: cx,
+    cy: cy,
+    r: "2",
+    fill: "#0d1117"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "gval",
+    style: {
+      color: col
+    }
+  }, Math.round(value)), /*#__PURE__*/React.createElement("div", {
+    className: "glab"
+  }, meta.label), /*#__PURE__*/React.createElement("div", {
+    className: "gsub"
+  }, meta.sub));
 }
-
-function Odometer({ value }) {
+function Odometer({
+  value
+}) {
   const digits = String(Math.max(0, Math.round(value))).padStart(5, "0").split("");
-  return (
-    <div className="odo odo-wide">
-      <div className="odo-meta">
-        <div className="glab">Обучение и полученный опыт</div>
-        <div className="gsub">ОДОМЕТР · НАКОПЛЕННЫЙ ОПЫТ</div>
-      </div>
-      <div className="row" style={{ gap: 6 }}>
-        <div className="odo-digits">
-          {digits.map((d, i) => <span className="cell" key={i}>{d}</span>)}
-        </div>
-        <span className="odo-unit">км</span>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "odo odo-wide"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "odo-meta"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "glab"
+  }, "Обучение и полученный опыт"), /*#__PURE__*/React.createElement("div", {
+    className: "gsub"
+  }, "ОДОМЕТР · НАКОПЛЕННЫЙ ОПЫТ")), /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "odo-digits"
+  }, digits.map((d, i) => /*#__PURE__*/React.createElement("span", {
+    className: "cell",
+    key: i
+  }, d))), /*#__PURE__*/React.createElement("span", {
+    className: "odo-unit"
+  }, "км")));
 }
-
-function Cluster({ values }) {
-  return (
-    <div className="cluster">
-      {GAUGES.map((g) => <Gauge key={g.key} meta={g} value={values[g.key]} />)}
-      <Odometer value={values.learn} />
-    </div>
-  );
+function Cluster({
+  values
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "cluster"
+  }, GAUGES.map(g => /*#__PURE__*/React.createElement(Gauge, {
+    key: g.key,
+    meta: g,
+    value: values[g.key]
+  })), /*#__PURE__*/React.createElement(Odometer, {
+    value: values.learn
+  }));
 }
 
 /* --------------------------- screens --------------------------- */
 
-function Intro({ onStart }) {
-  return (
-    <div className="intro-card">
-      <div className="eyebrow">Симуляция · Лидерство и управление</div>
-      <h1 className="h1">Продвижение процесса трансформации</h1>
-      <p className="lede" style={{ marginTop: 16 }}>
-        Ваша группа — «команда водителей», ведущая организацию через цифровую трансформацию.
-        Перед вами приборная панель из семи индикаторов. На каждом этапе дороги вы принимаете
-        решение, и панель мгновенно реагирует. Скорость, доверие, этика и люди постоянно
-        тянут руль в разные стороны — ваша задача удержать баланс.
-      </p>
-      <div className="goal">
-        <strong>Цель:</strong> почувствовать баланс между контролем ключевых показателей в ходе
-        трансформации и увидеть, как решения влияют на прогресс, людей и долгосрочные результаты.
-      </div>
-      <details className="fnote">
-        <summary>Заметка для фасилитатора</summary>
-        <ul>
-          <li>Формат: группы по 4–6 человек, один участник управляет экраном, решение принимается вместе.</li>
-          <li>Семь дорожных событий, на каждое — 2–3 минуты на обсуждение и выбор.</li>
-          <li>Ориентировочное время: 35–40 минут, включая разбор в конце.</li>
-          <li>После финиша вернитесь к вопросам для размышления и сравните маршруты разных групп.</li>
-        </ul>
-      </details>
-      <div style={{ marginTop: 26 }}>
-        <button className="btn" onClick={onStart}>Начать движение →</button>
-      </div>
-    </div>
-  );
+function Intro({
+  onStart
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "intro-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "eyebrow"
+  }, "Симуляция · Лидерство и управление"), /*#__PURE__*/React.createElement("h1", {
+    className: "h1"
+  }, "Продвижение процесса трансформации"), /*#__PURE__*/React.createElement("p", {
+    className: "lede",
+    style: {
+      marginTop: 16
+    }
+  }, "Ваша группа — «команда водителей», ведущая организацию через цифровую трансформацию. Перед вами приборная панель из семи индикаторов. На каждом этапе дороги вы принимаете решение, и панель мгновенно реагирует. Скорость, доверие, этика и люди постоянно тянут руль в разные стороны — ваша задача удержать баланс."), /*#__PURE__*/React.createElement("div", {
+    className: "goal"
+  }, /*#__PURE__*/React.createElement("strong", null, "Цель:"), " почувствовать баланс между контролем ключевых показателей в ходе трансформации и увидеть, как решения влияют на прогресс, людей и долгосрочные результаты."), /*#__PURE__*/React.createElement("details", {
+    className: "fnote"
+  }, /*#__PURE__*/React.createElement("summary", null, "Заметка для фасилитатора"), /*#__PURE__*/React.createElement("ul", null, /*#__PURE__*/React.createElement("li", null, "Формат: группы по 4–6 человек, один участник управляет экраном, решение принимается вместе."), /*#__PURE__*/React.createElement("li", null, "Семь дорожных событий, на каждое — 2–3 минуты на обсуждение и выбор."), /*#__PURE__*/React.createElement("li", null, "Ориентировочное время: 35–40 минут, включая разбор в конце."), /*#__PURE__*/React.createElement("li", null, "После финиша вернитесь к вопросам для размышления и сравните маршруты разных групп."))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 26
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn",
+    onClick: onStart
+  }, "Начать движение →")));
 }
-
-function Debrief({ values, onRestart }) {
-  const health = (k, v) => (k === "speed" ? clamp(100 - Math.abs(v - 52) * 2) : v);
-  const scored = GAUGES.map((g) => ({ ...g, v: values[g.key], h: health(g.key, values[g.key]) }));
-  const lows = scored.filter((s) => s.h < 30).length;
+function Debrief({
+  values,
+  onRestart
+}) {
+  const health = (k, v) => k === "speed" ? clamp(100 - Math.abs(v - 52) * 2) : v;
+  const scored = GAUGES.map(g => ({
+    ...g,
+    v: values[g.key],
+    h: health(g.key, values[g.key])
+  }));
+  const lows = scored.filter(s => s.h < 30).length;
   const avg = Math.round(scored.reduce((a, s) => a + s.h, 0) / scored.length);
   const balance = clamp(avg - lows * 8 + Math.min(10, values.learn / 12), 0, 100);
-  const hardest = scored.reduce((m, s) => (s.h < m.h ? s : m), scored[0]);
-
+  const hardest = scored.reduce((m, s) => s.h < m.h ? s : m, scored[0]);
   let title, text;
   if (lows === 0 && avg >= 55) {
     title = "Уверенный курс";
@@ -420,51 +609,66 @@ function Debrief({ values, onRestart }) {
     title = "Цель ценой устойчивости";
     text = "Вы доехали до вехи, но несколько индикаторов в красной зоне. Скорость и сроки взяли верх над балансом — одна из самых частых ловушек цифровой трансформации.";
   }
-
-  const questions = [
-    "Какой показатель было сложнее всего удержать в балансе?",
-    "Чему вы чаще отдавали приоритет — скорости, ценностям или срокам?",
-    "Как этические соображения повлияли на ваши решения?",
-    "Какие уроки применимы к процессу трансформации вашей организации?",
-  ];
-
-  return (
-    <div className="intro-card">
-      <div className="eyebrow">Разбор маршрута · Финиш</div>
-      <div className="verdict">{title}</div>
-      <div className="row" style={{ marginBottom: 4 }}>
-        <span className="chip">ИНДЕКС БАЛАНСА: {Math.round(balance)}</span>
-        <span className="chip">ОПЫТ: {Math.round(values.learn)} км</span>
-        <span className="chip">КРАСНАЯ ЗОНА: {lows}</span>
-      </div>
-      <p className="lede" style={{ marginTop: 14 }}>{text}</p>
-      <p className="outcome" style={{ marginTop: 10 }}>
-        Сложнее всего было удержать: <strong style={{ color: "var(--ink)" }}>{hardest.label.toLowerCase()}</strong>.
-      </p>
-
-      <div style={{ marginTop: 20 }}><Cluster values={values} /></div>
-
-      <div className="q-block">
-        <div className="eyebrow" style={{ color: "var(--mut)" }}>Вопросы для размышления</div>
-        {questions.map((q, i) => (
-          <div className="q" key={i}>
-            <span className="n">{i + 1}</span>
-            <p>{q}</p>
-          </div>
-        ))}
-      </div>
-
-      <p className="outcome">
-        Реализация цифровой трансформации — это не только соблюдение сроков, но и поиск баланса
-        и адаптация. Доверие, моральный дух, риски, обучение и видение всё время взаимодействуют,
-        и сильное руководство — это умение вести их вместе.
-      </p>
-
-      <div style={{ marginTop: 24 }}>
-        <button className="btn ghost" onClick={onRestart}>Пройти заново ↺</button>
-      </div>
-    </div>
-  );
+  const questions = ["Какой показатель было сложнее всего удержать в балансе?", "Чему вы чаще отдавали приоритет — скорости, ценностям или срокам?", "Как этические соображения повлияли на ваши решения?", "Какие уроки применимы к процессу трансформации вашей организации?"];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "intro-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "eyebrow"
+  }, "Разбор маршрута · Финиш"), /*#__PURE__*/React.createElement("div", {
+    className: "verdict"
+  }, title), /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "chip"
+  }, "ИНДЕКС БАЛАНСА: ", Math.round(balance)), /*#__PURE__*/React.createElement("span", {
+    className: "chip"
+  }, "ОПЫТ: ", Math.round(values.learn), " км"), /*#__PURE__*/React.createElement("span", {
+    className: "chip"
+  }, "КРАСНАЯ ЗОНА: ", lows)), /*#__PURE__*/React.createElement("p", {
+    className: "lede",
+    style: {
+      marginTop: 14
+    }
+  }, text), /*#__PURE__*/React.createElement("p", {
+    className: "outcome",
+    style: {
+      marginTop: 10
+    }
+  }, "Сложнее всего было удержать: ", /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: "var(--ink)"
+    }
+  }, hardest.label.toLowerCase()), "."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 20
+    }
+  }, /*#__PURE__*/React.createElement(Cluster, {
+    values: values
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "q-block"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "eyebrow",
+    style: {
+      color: "var(--mut)"
+    }
+  }, "Вопросы для размышления"), questions.map((q, i) => /*#__PURE__*/React.createElement("div", {
+    className: "q",
+    key: i
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "n"
+  }, i + 1), /*#__PURE__*/React.createElement("p", null, q)))), /*#__PURE__*/React.createElement("p", {
+    className: "outcome"
+  }, "Реализация цифровой трансформации — это не только соблюдение сроков, но и поиск баланса и адаптация. Доверие, моральный дух, риски, обучение и видение всё время взаимодействуют, и сильное руководство — это умение вести их вместе."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 24
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost",
+    onClick: onRestart
+  }, "Пройти заново ↺")));
 }
 
 /* --------------------------- app --------------------------- */
@@ -475,13 +679,17 @@ function App() {
   const [values, setValues] = useState(INITIAL);
   const [lastChoice, setLastChoice] = useState(null);
   const display = useTween(values);
-
   const stage = STAGES[stageIdx];
-
-  const start = () => { setValues(INITIAL); setStageIdx(0); setLastChoice(null); setPhase("play"); };
-
-  const choose = (choice) => {
-    const next = { ...values };
+  const start = () => {
+    setValues(INITIAL);
+    setStageIdx(0);
+    setLastChoice(null);
+    setPhase("play");
+  };
+  const choose = choice => {
+    const next = {
+      ...values
+    };
     for (const k in choice.fx) {
       next[k] = k === "learn" ? Math.max(0, next[k] + choice.fx[k]) : clamp(next[k] + choice.fx[k]);
     }
@@ -489,86 +697,90 @@ function App() {
     setLastChoice(choice);
     setPhase("result");
   };
-
   const advance = () => {
-    if (stageIdx + 1 >= STAGES.length) { setPhase("debrief"); }
-    else { setStageIdx(stageIdx + 1); setLastChoice(null); setPhase("play"); }
+    if (stageIdx + 1 >= STAGES.length) {
+      setPhase("debrief");
+    } else {
+      setStageIdx(stageIdx + 1);
+      setLastChoice(null);
+      setPhase("play");
+    }
   };
-
-  const deltaLabel = (k) => {
-    const names = { trust: "Доверие", speed: "Темп", ethics: "Этика", vision: "Видение",
-      morale: "Мораль", risk: "Риски", learn: "Опыт" };
+  const deltaLabel = k => {
+    const names = {
+      trust: "Доверие",
+      speed: "Темп",
+      ethics: "Этика",
+      vision: "Видение",
+      morale: "Мораль",
+      risk: "Риски",
+      learn: "Опыт"
+    };
     return names[k] || k;
   };
-
-  return (
-    <div className="drv-root">
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="drv-wrap">
-
-        {phase === "intro" && <Intro onStart={start} />}
-
-        {(phase === "play" || phase === "result") && (
-          <>
-            <div className="routebar">
-              <span className="stage-lbl">Этап {stageIdx + 1} / {STAGES.length}</span>
-              <div className="road">
-                <div className="lane" />
-                <div className="fill" style={{ width: `${((stageIdx + (phase === "result" ? 1 : 0)) / STAGES.length) * 100}%` }} />
-              </div>
-              <span className="stage-lbl mono">🚗</span>
-            </div>
-
-            <Cluster values={display} />
-
-            <div className="windshield">
-              <div className="ev-head">
-                <span className="ev-icon">{stage.icon}</span>
-                <div>
-                  <div className="ev-title">{stage.title}</div>
-                  <span className="chip">Индикатор: {stage.tag}</span>
-                </div>
-              </div>
-
-              {phase === "play" && (
-                <>
-                  <p className="ev-body">{stage.body}</p>
-                  <div className="choices">
-                    {stage.choices.map((c, i) => (
-                      <button className="choice" key={i} onClick={() => choose(c)}>{c.label}</button>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {phase === "result" && lastChoice && (
-                <>
-                  <p className="result-note">{lastChoice.note}</p>
-                  <div className="deltas">
-                    {Object.entries(lastChoice.fx).map(([k, d]) => (
-                      <span className={"delta " + (d > 0 ? "up" : "dn")} key={k}>
-                        {deltaLabel(k)} {d > 0 ? "+" : ""}{d}{k === "learn" ? " км" : ""}
-                      </span>
-                    ))}
-                  </div>
-                  <button className="btn" onClick={advance}>
-                    {stageIdx + 1 >= STAGES.length ? "К разбору маршрута →" : "Продолжить движение →"}
-                  </button>
-                </>
-              )}
-            </div>
-          </>
-        )}
-
-        {phase === "debrief" && <Debrief values={values} onRestart={start} />}
-
-        <div className="footer">Цифровая трансформация в социальной защите · DCI · Симуляция «Баланс и адаптация»</div>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "drv-root"
+  }, /*#__PURE__*/React.createElement("style", {
+    dangerouslySetInnerHTML: {
+      __html: CSS
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "drv-wrap"
+  }, phase === "intro" && /*#__PURE__*/React.createElement(Intro, {
+    onStart: start
+  }), (phase === "play" || phase === "result") && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "routebar"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "stage-lbl"
+  }, "Этап ", stageIdx + 1, " / ", STAGES.length), /*#__PURE__*/React.createElement("div", {
+    className: "road"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "lane"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "fill",
+    style: {
+      width: `${(stageIdx + (phase === "result" ? 1 : 0)) / STAGES.length * 100}%`
+    }
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "stage-lbl mono"
+  }, "🚗")), /*#__PURE__*/React.createElement(Cluster, {
+    values: display
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "windshield"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ev-head"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ev-icon"
+  }, stage.icon), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "ev-title"
+  }, stage.title), /*#__PURE__*/React.createElement("span", {
+    className: "chip"
+  }, "Индикатор: ", stage.tag))), phase === "play" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    className: "ev-body"
+  }, stage.body), /*#__PURE__*/React.createElement("div", {
+    className: "choices"
+  }, stage.choices.map((c, i) => /*#__PURE__*/React.createElement("button", {
+    className: "choice",
+    key: i,
+    onClick: () => choose(c)
+  }, c.label)))), phase === "result" && lastChoice && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    className: "result-note"
+  }, lastChoice.note), /*#__PURE__*/React.createElement("div", {
+    className: "deltas"
+  }, Object.entries(lastChoice.fx).map(([k, d]) => /*#__PURE__*/React.createElement("span", {
+    className: "delta " + (d > 0 ? "up" : "dn"),
+    key: k
+  }, deltaLabel(k), " ", d > 0 ? "+" : "", d, k === "learn" ? " км" : ""))), /*#__PURE__*/React.createElement("button", {
+    className: "btn",
+    onClick: advance
+  }, stageIdx + 1 >= STAGES.length ? "К разбору маршрута →" : "Продолжить движение →")))), phase === "debrief" && /*#__PURE__*/React.createElement(Debrief, {
+    values: values,
+    onRestart: start
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "footer"
+  }, "Цифровая трансформация в социальной защите · DCI · Симуляция «Баланс и адаптация»")));
 }
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
 </script>
 </body>
 </html>
