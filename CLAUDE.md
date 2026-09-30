@@ -26,4 +26,5 @@ Interactive Russian-language training simulation, «Продвижение пр�
 ## Checking changes
 
 - A `PostToolUse` hook (`.claude/hooks/check-index-syntax.js`) syntax-checks the inline script after every edit. If it reports an error, fix it before doing anything else — a syntax error means a blank page.
+- After changing learner-facing text or `STAGES`, have the `ru-content-reviewer` subagent review it (language, terminology, whether each choice's `note` matches its `fx`, teaching quality).
 - After changing `index.html`, run the `smoke-test` skill (`/smoke-test`): it plays the whole simulation on phone and desktop widths in headless Chromium and saves screenshots to review.
