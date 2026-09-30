@@ -91,9 +91,9 @@ const CSS = `
 .gauge{ position:relative; background:var(--panel); border:1px solid var(--line);
   border-radius:12px; padding:10px 8px 8px; text-align:center; transition:border-color .3s, box-shadow .3s; }
 .gauge.alarm{ border-color:var(--red); box-shadow:0 0 0 1px var(--red), 0 0 22px -6px var(--red); }
-.gauge .glab{ font-family:'Oswald'; text-transform:uppercase; font-size:11px; letter-spacing:.04em;
+.gauge .glab, .odo .glab{ font-family:'Oswald'; text-transform:uppercase; font-size:11px; letter-spacing:.04em;
   line-height:1.15; color:var(--ink); min-height:26px; display:flex; align-items:center; justify-content:center; }
-.gauge .gsub{ font-family:'JetBrains Mono'; font-size:9px; letter-spacing:.16em;
+.gauge .gsub, .odo .gsub{ font-family:'JetBrains Mono'; font-size:9px; letter-spacing:.16em;
   color:var(--dim); text-transform:uppercase; margin-top:2px; }
 .gval{ font-family:'JetBrains Mono'; font-weight:700; font-size:19px; margin-top:-6px; }
 .lamp{ position:absolute; top:8px; right:8px; width:9px; height:9px; border-radius:50%;
@@ -102,9 +102,11 @@ const CSS = `
 @keyframes blink{ 50%{ opacity:.25; } }
 
 /* ---- odometer ---- */
-.odo{ display:flex; align-items:center; justify-content:space-between; gap:14px;
+.odo{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px 14px;
   background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 16px; }
-.odo-meta .glab{ text-align:left; justify-content:flex-start; }
+.odo-meta{ flex:1 1 110px; min-width:0; }
+.odo-meta .glab{ text-align:left; justify-content:flex-start; min-height:0; }
+.odo-meta .gsub{ letter-spacing:.1em; }
 .odo-digits{ display:flex; gap:4px; }
 .odo-digits .cell{ font-family:'JetBrains Mono'; font-weight:700; font-size:22px;
   background:#070a0d; color:var(--cyan); border:1px solid #243; border-radius:5px;
