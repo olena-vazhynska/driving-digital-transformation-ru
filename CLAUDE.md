@@ -27,4 +27,6 @@ Interactive Russian-language training simulation, «Продвижение пр�
 
 - A `PostToolUse` hook (`.claude/hooks/check-index-syntax.js`) syntax-checks the inline script after every edit. If it reports an error, fix it before doing anything else — a syntax error means a blank page.
 - After changing learner-facing text or `STAGES`, have the `ru-content-reviewer` subagent review it (language, terminology, whether each choice's `note` matches its `fx`, teaching quality).
+- To look at or click through the page yourself, use the Playwright MCP server (`.mcp.json`, launched by `.claude/mcp/playwright.js`). Serve the page first with `python3 -m http.server 8000` (run in the background) and open `http://localhost:8000/index.html`; the server blocks `file://` URLs. Its snapshots and logs go to `.playwright-mcp/` (git-ignored).
+- In cloud sessions whose network policy blocks unpkg.com, the page renders blank in the browser because React can't load. That is the environment, not the page.
 - After changing `index.html`, run the `smoke-test` skill (`/smoke-test`): it plays the whole simulation on phone and desktop widths in headless Chromium and saves screenshots to review.
