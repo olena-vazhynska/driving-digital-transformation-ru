@@ -26,4 +26,4 @@ Interactive Russian-language training simulation, «Продвижение пр�
 ## Checking changes
 
 - A `PostToolUse` hook (`.claude/hooks/check-index-syntax.js`) syntax-checks the inline script after every edit. If it reports an error, fix it before doing anything else — a syntax error means a blank page.
-- To see the page, open `index.html` in a browser, or serve it with `python3 -m http.server` and load it in headless Chromium (Playwright is available in cloud sessions).
+- After changing `index.html`, run the `smoke-test` skill (`/smoke-test`): it plays the whole simulation on phone and desktop widths in headless Chromium and saves screenshots to review.
